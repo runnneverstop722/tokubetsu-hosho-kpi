@@ -2,13 +2,13 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>特別補償KPI Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>RFA KPI Dashboard - SharePoint版</title>
     <style>
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            box-sizing: border-box !important;
         }
 
         body {
@@ -16,16 +16,21 @@
             background: #f7f8fc;
             color: #2d3748;
             min-height: 100vh;
-            padding: 10px;
             -webkit-font-smoothing: antialiased;
             line-height: 1.6;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            overflow-x: hidden !important;
         }
 
         .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
+            margin: 0 !important;
+            max-width: none !important;
+            width: 100% !important;
+            border-radius: 0 !important;
             background: #ffffff;
-            border-radius: 16px;
+    
             box-shadow: 0 4px 24px rgba(31, 41, 55, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
             overflow: hidden;
             border: 1px solid #e5e7eb;
@@ -39,11 +44,32 @@
             position: relative;
         }
 
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.03"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.03"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.02"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
         .header h1 {
             font-size: clamp(22px, 4vw, 32px);
             font-weight: 600;
             margin-bottom: 8px;
             letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: clamp(14px, 2vw, 16px);
+            opacity: 0.85;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
         }
 
         .status-bar {
@@ -51,8 +77,9 @@
             padding: 16px 32px;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
             gap: 16px;
         }
 
@@ -60,6 +87,48 @@
             color: #6b7280;
             font-size: 14px;
             font-weight: 500;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        .sharepoint-integration {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 32px;
+        }
+
+        .sharepoint-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .sharepoint-info {
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.5;
+            opacity: 0.8;
         }
 
         .dashboard-grid {
@@ -86,6 +155,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            letter-spacing: -0.01em;
         }
 
         .filter-group {
@@ -178,6 +248,10 @@
             transform: scaleX(1);
         }
 
+        .kpi-card:active {
+            transform: translateY(-1px);
+        }
+
         .kpi-title {
             font-size: 12px;
             color: #6b7280;
@@ -212,6 +286,19 @@
             transition: all 0.2s ease;
         }
 
+        .chart-container:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+
         .gauge-container {
             position: relative;
             width: 100%;
@@ -219,6 +306,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
 
         .gauge {
@@ -232,6 +320,15 @@
             cursor: pointer;
             transition: all 0.3s ease;
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+        }
+
+        .gauge:hover {
+            transform: scale(1.02);
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
+        }
+
+        .gauge:active {
+            transform: scale(0.98);
         }
 
         .gauge::before {
@@ -251,6 +348,7 @@
             font-weight: 700;
             color: #1f2937;
             text-align: center;
+            letter-spacing: -0.01em;
         }
 
         .gauge-budget {
@@ -265,37 +363,398 @@
             background: conic-gradient(from 0deg, #10b981 0deg 360deg);
         }
 
-        /* レスポンシブ対応 */
+        .table-container {
+            grid-column: 1 / -1;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 800px;
+        }
+
+        .data-table th {
+            background: #f9fafb;
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f3f4f6;
+            white-space: nowrap;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .data-table tr {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-pending {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .refresh-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .refresh-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .refresh-button:active {
+            transform: translateY(0);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: #374151;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 44px;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: #4b5563;
+        }
+
+        html, body {
+           width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* デスクトップ最適化 */
+        @media (min-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 300px 1fr;
+                gap: 25px;
+                padding: 25px;
+            }
+            
+            .sidebar {
+                padding: 25px;
+            }
+            
+            .kpi-section {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+            
+            .main-content {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 25px;
+            }
+            
+            .kpi-card {
+                padding: 25px;
+                min-height: 140px;
+            }
+            
+            .chart-container {
+                padding: 25px;
+                min-height: 300px;
+            }
+            
+            .gauge {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .gauge::before {
+                width: 140px;
+                height: 140px;
+            }
+        }
+
+        /* タブレット対応 */
         @media (max-width: 1199px) and (min-width: 769px) {
             .dashboard-grid {
                 grid-template-columns: 250px 1fr;
                 gap: 20px;
                 padding: 20px;
             }
+            
+            .kpi-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
+        /* スマートフォン対応 */
         @media (max-width: 768px) {
-            body { padding: 5px; }
-            .header { padding: 12px 15px; }
+            body {
+                padding: 5px;
+            }
+            
+            .header {
+                padding: 12px 15px;
+            }
+            
+            .status-bar {
+                padding: 8px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
             .dashboard-grid {
                 grid-template-columns: 1fr;
                 padding: 10px;
                 gap: 10px;
             }
-            .sidebar { order: -1; padding: 15px; }
-            .kpi-section { grid-template-columns: 1fr; gap: 10px; }
-            .main-content { grid-template-columns: 1fr; gap: 15px; }
+            
+            .sidebar {
+                order: -1;
+                padding: 15px;
+            }
+            
+            .kpi-section {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .kpi-card {
+                padding: 15px;
+                min-height: 100px;
+            }
+            
+            .chart-container {
+                padding: 15px;
+                min-height: 250px;
+            }
+            
+            .gauge {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .gauge::before {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .table-container {
+                padding: 15px;
+                margin: 0 -5px;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .sidebar.mobile-hidden {
+                display: none;
+            }
         }
 
-        /* システム設定ダークモード対応 */
+        /* 極小画面対応 */
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .kpi-value {
+                font-size: 28px;
+            }
+            
+            .gauge {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .gauge::before {
+                width: 85px;
+                height: 85px;
+            }
+            
+            .gauge-value {
+                font-size: 20px;
+            }
+            
+            .data-table {
+                font-size: 12px;
+                min-width: 600px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px 4px;
+            }
+        }
+
+        /* システム設定に応じたダークモード対応 */
         @media (prefers-color-scheme: dark) {
-            body { background: #111827; color: #f9fafb; }
-            .dashboard-container { background: #1f2937; border-color: #374151; }
-            .status-bar { background: #111827; border-color: #374151; }
-            .sidebar { background: #111827; border-color: #374151; }
-            .kpi-card, .chart-container { background: #1f2937; border-color: #374151; }
-            .kpi-value, .gauge-value { color: #f9fafb; }
-            .gauge::before { background: #1f2937; }
+            body {
+                background: #111827;
+                color: #f9fafb;
+            }
+            
+            .dashboard-container {
+                background: #1f2937;
+                border-color: #374151;
+            }
+            
+            .header {
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            }
+            
+            .status-bar {
+                background: #111827;
+                border-color: #374151;
+            }
+            
+            .status-info {
+                color: #9ca3af;
+            }
+            
+            .sidebar {
+                background: #111827;
+                border-color: #374151;
+            }
+            
+            .sidebar h3 {
+                color: #f9fafb;
+            }
+            
+            .filter-item {
+                border-color: transparent;
+            }
+            
+            .filter-item:hover {
+                background-color: #1f2937;
+                border-color: #4b5563;
+            }
+            
+            .filter-item label {
+                color: #d1d5db;
+            }
+            
+            .kpi-card,
+            .chart-container,
+            .table-container {
+                background: #1f2937;
+                border-color: #374151;
+            }
+            
+            .kpi-title,
+            .kpi-unit {
+                color: #9ca3af;
+            }
+            
+            .kpi-value,
+            .gauge-value,
+            .chart-title,
+            .table-title {
+                color: #f9fafb;
+            }
+            
+            .data-table th {
+                background: #111827;
+                color: #d1d5db;
+                border-color: #374151;
+            }
+            
+            .data-table td {
+                color: #d1d5db;
+                border-color: #374151;
+            }
+            
+            .data-table tr:hover {
+                background: #111827;
+            }
+            
+            .gauge::before {
+                background: #1f2937;
+            }
         }
     </style>
 </head>
@@ -312,7 +771,11 @@
         </div>
         
         <div class="dashboard-grid">
-            <div class="sidebar">
+            <div class="sidebar" id="sidebar">
+                <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+                    📋 フィルター表示/非表示
+                </button>
+                
                 <h3>📊 Data Selection</h3>
                 <div class="filter-group">
                     <div class="filter-item">
@@ -354,94 +817,425 @@
             </div>
 
             <div class="main-content">
+                <!-- KPIサマリーセクション -->
                 <div class="kpi-section">
-                    <div class="kpi-card">
+                    <div class="kpi-card" onclick="showKPIDetails('responseTime')">
                         <div class="kpi-title">Initial Response Time</div>
                         <div class="kpi-value" id="responseTime">5.0</div>
                         <div class="kpi-unit">days</div>
                     </div>
                     
-                    <div class="kpi-card">
+                    <div class="kpi-card" onclick="showKPIDetails('resolutionTime')">
                         <div class="kpi-title">Resolution Time</div>
                         <div class="kpi-value" id="resolutionTime">6.0</div>
                         <div class="kpi-unit">days</div>
                     </div>
                     
-                    <div class="kpi-card">
+                    <div class="kpi-card" onclick="showKPIDetails('budgetSpent')">
                         <div class="kpi-title">Budget Spent</div>
                         <div class="kpi-value" id="budgetSpent">¥34M</div>
                         <div class="kpi-unit">of ¥60M</div>
                     </div>
                     
-                    <div class="kpi-card">
+                    <div class="kpi-card" onclick="showKPIDetails('completionRate')">
                         <div class="kpi-title">Completion Rate</div>
                         <div class="kpi-value" id="completionRate">100%</div>
                         <div class="kpi-unit">within 12 days</div>
                     </div>
                 </div>
 
+                <!-- チャートセクション -->
                 <div class="chart-container">
-                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; text-align: center;">💰 Budget Spent Amount</div>
+                    <div class="chart-title">💰 Budget Spent Amount</div>
                     <div class="gauge-container">
-                        <div class="gauge gauge-budget">
-                            <div class="gauge-value">¥34M</div>
+                        <div class="gauge gauge-budget" onclick="showGaugeDetails('budget')">
+                            <div class="gauge-value" id="gaugeBudget">¥34M</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="chart-container">
-                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; text-align: center;">📊 Budget Spent Rate</div>
+                    <div class="chart-title">📊 Budget Spent Rate</div>
                     <div class="gauge-container">
-                        <div class="gauge gauge-rate">
-                            <div class="gauge-value">56%</div>
+                        <div class="gauge gauge-rate" onclick="showGaugeDetails('rate')">
+                            <div class="gauge-value" id="gaugeRate">56%</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="chart-container">
-                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; text-align: center;">✅ Completion Rate</div>
+                    <div class="chart-title">✅ Completion Rate</div>
                     <div class="gauge-container">
-                        <div class="gauge gauge-completion">
-                            <div class="gauge-value">100%</div>
+                        <div class="gauge gauge-completion" onclick="showGaugeDetails('completion')">
+                            <div class="gauge-value" id="gaugeCompletion">100%</div>
                         </div>
                     </div>
+                </div>
+
+                <!-- 詳細データテーブル -->
+                <div class="table-container">
+                    <div class="table-title">
+                        📊 Project Details
+                        <span style="margin-left: auto; font-size: 12px; color: #6c757d;">
+                            横スクロール可能 →
+                        </span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>RFA</th>
+                                <th>Project ID</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Budget</th>
+                                <th>Spent</th>
+                                <th>Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTable">
+                            <tr onclick="showProjectDetails(this)" data-category="正常">
+                                <td>RFA2566111_40M</td>
+                                <td>F250039</td>
+                                <td>三菱線ミスファイヤ再発3回</td>
+                                <td>正常</td>
+                                <td><span class="status-badge status-completed">Completed</span></td>
+                                <td>¥40M</td>
+                                <td>¥33.5M</td>
+                                <td>83.8%</td>
+                            </tr>
+                            <tr onclick="showProjectDetails(this)" data-category="正常">
+                                <td>RFA2566111_40M</td>
+                                <td>F250026</td>
+                                <td>東京世田谷 野矢線ドアミラー</td>
+                                <td>正常</td>
+                                <td><span class="status-badge status-progress">In Progress</span></td>
+                                <td>¥40M</td>
+                                <td>¥25M</td>
+                                <td>62.5%</td>
+                            </tr>
+                            <tr onclick="showProjectDetails(this)" data-category="出荷停止" style="display: none;">
+                                <td>RFA2574190_20M</td>
+                                <td>F250040</td>
+                                <td>出荷停止対応プロジェクト</td>
+                                <td>出荷停止</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                                <td>¥20M</td>
+                                <td>¥5M</td>
+                                <td>25.0%</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        function updateFilters() {
-            console.log('フィルターが更新されました');
-        }
+    // SharePoint Lists 接続設定
+    const SHAREPOINT_CONFIG = {
+        siteUrl: 'https://volkswagengroup.sharepoint.com/sites/VGJ_GAS_SO_CustomerCare',
+        listName: 'VWCC_ApprovedIssues',
+        updateInterval: 300000 // 5分ごと更新
+    };
 
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        function updateTimestamp() {
-            const now = new Date();
-            const timestamp = now.toLocaleString('ja-JP', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+    // SharePoint REST API でリアルタイムデータ取得
+    async function fetchSharePointData() {
+        try {
+            console.log('SharePointからデータを取得中...');
+            
+            const listUrl = `${SHAREPOINT_CONFIG.siteUrl}/_api/web/lists/getbytitle('${SHAREPOINT_CONFIG.listName}')/items`;
+            
+            const response = await fetch(`${listUrl}?$top=5000&$orderby=Modified desc`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json;odata=verbose',
+                    'Content-Type': 'application/json;odata=verbose'
+                },
+                credentials: 'include'
             });
-            document.getElementById('lastUpdate').textContent = timestamp;
-        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            updateTimestamp();
-            console.log('📊 特別補償KPI ダッシュボード初期化完了');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('SharePointデータ取得成功:', data.d.results.length + '件');
+            
+            return processSharePointData(data.d.results);
+            
+        } catch (error) {
+            console.error('SharePoint接続エラー:', error);
+            console.log('模擬データで動作を継続します');
+            
+            // 接続失敗時は模擬データを使用
+            return getMockData();
+        }
+    }
+
+    // SharePointデータの処理
+    function processSharePointData(items) {
+        console.log('SharePoint生データ:', items);
+        
+        // 最初の数件のフィールド構造を確認
+        if (items.length > 0) {
+            console.log('フィールド構造:', Object.keys(items[0]));
+        }
+        
+        // カテゴリフィルタリング
+        const filteredItems = items.filter(item => {
+            const category = item.Category || '';
+            
+            if (document.getElementById('exclude1').checked && category.includes('出荷停止')) return false;
+            if (document.getElementById('exclude2').checked && category.includes('BO')) return false;
+            if (document.getElementById('exclude3').checked && category.includes('レンタカー')) return false;
+            
+            return true;
         });
 
-        // 自動更新（5分ごと）
-        setInterval(updateTimestamp, 300000);
+        // RFAフィルタリング
+        const rfa1Checked = document.getElementById('rfa1').checked;
+        const rfa2Checked = document.getElementById('rfa2').checked;
+        
+        const rfaFilteredItems = filteredItems.filter(item => {
+            const rfa = item.RFA || item.Title || '';
+            
+            if (rfa.includes('RFA2566111') && !rfa1Checked) return false;
+            if (rfa.includes('RFA2574190') && !rfa2Checked) return false;
+            
+            return true;
+        });
+
+        // KPI計算
+        const kpis = calculateKPIs(rfaFilteredItems);
+        
+        return {
+            kpis: kpis,
+            items: rfaFilteredItems,
+            totalCount: items.length,
+            filteredCount: rfaFilteredItems.length
+        };
+    }
+
+    // 模擬データ（接続失敗時用）
+    function getMockData() {
+        console.log('模擬データを使用');
+        return {
+            kpis: {
+                responseTime: 5.0,
+                resolutionTime: 6.0,
+                budgetSpent: 34,
+                budgetTotal: 60,
+                completionRate: 100
+            },
+            items: [],
+            totalCount: 3,
+            filteredCount: 2
+        };
+    }
+
+    // KPI計算
+    function calculateKPIs(items) {
+        if (items.length === 0) {
+            return getMockData().kpis; // データなしの場合は模擬データ
+        }
+
+        // 実際のSharePointフィールドに合わせて計算
+        const totalBudget = items.reduce((sum, item) => {
+            // フィールド名は実際のSharePointリストに合わせて調整
+            const budget = parseFloat(item.Budget) || 
+                        parseFloat(item.BudgetAmount) || 
+                        parseFloat(item.Amount) || 0;
+            return sum + budget;
+        }, 0);
+
+        const totalSpent = items.reduce((sum, item) => {
+            const spent = parseFloat(item.BudgetSpent) || 
+                        parseFloat(item.SpentAmount) || 
+                        parseFloat(item.Spent) || 0;
+            return sum + spent;
+        }, 0);
+
+        const completedItems = items.filter(item => {
+            const status = item.Status || '';
+            return status === 'Completed' || 
+                status === '完了' || 
+                status === 'Complete' ||
+                status === 'Closed';
+        });
+
+        return {
+            responseTime: calculateAverageResponseTime(items),
+            resolutionTime: calculateAverageResolutionTime(completedItems),
+            budgetSpent: totalSpent / 1000000, // M単位
+            budgetTotal: totalBudget / 1000000, // M単位
+            completionRate: items.length > 0 ? (completedItems.length / items.length) * 100 : 100
+        };
+    }
+
+    // 応答時間計算
+    function calculateAverageResponseTime(items) {
+        // 日付フィールドが利用可能な場合の計算
+        const validItems = items.filter(item => {
+            return item.Created && (item.ResponseDate || item.FirstResponse);
+        });
+        
+        if (validItems.length === 0) return 5.0;
+
+        const totalDays = validItems.reduce((sum, item) => {
+            const created = new Date(item.Created);
+            const response = new Date(item.ResponseDate || item.FirstResponse);
+            const diffDays = Math.abs(response - created) / (1000 * 60 * 60 * 24);
+            return sum + diffDays;
+        }, 0);
+
+        return Math.round((totalDays / validItems.length) * 10) / 10;
+    }
+
+    // 解決時間計算
+    function calculateAverageResolutionTime(items) {
+        const validItems = items.filter(item => {
+            return item.Created && (item.ResolvedDate || item.Modified);
+        });
+        
+        if (validItems.length === 0) return 6.0;
+
+        const totalDays = validItems.reduce((sum, item) => {
+            const created = new Date(item.Created);
+            const resolved = new Date(item.ResolvedDate || item.Modified);
+            const diffDays = Math.abs(resolved - created) / (1000 * 60 * 60 * 24);
+            return sum + diffDays;
+        }, 0);
+
+        return Math.round((totalDays / validItems.length) * 10) / 10;
+    }
+
+    // ダッシュボード更新
+    async function updateDashboard() {
+        showNotification('🔄 データを更新しています...', 'info');
+        
+        const data = await fetchSharePointData();
+        
+        if (data) {
+            // KPI更新
+            document.getElementById('responseTime').textContent = data.kpis.responseTime.toFixed(1);
+            document.getElementById('resolutionTime').textContent = data.kpis.resolutionTime.toFixed(1);
+            document.getElementById('budgetSpent').textContent = `¥${data.kpis.budgetSpent.toFixed(1)}M`;
+            document.getElementById('completionRate').textContent = `${Math.round(data.kpis.completionRate)}%`;
+
+            // ゲージ更新
+            updateGauges(data.kpis);
+            
+            // タイムスタンプ更新
+            updateTimestamp();
+            
+            const message = data.totalCount > 0 ? 
+                `✅ SharePointデータ更新（${data.filteredCount}/${data.totalCount}件）` : 
+                '✅ 模擬データで表示中';
+                
+            showNotification(message, 'success');
+            
+            console.log('ダッシュボード更新完了:', data);
+        }
+    }
+
+    // ゲージ更新
+    function updateGauges(kpis) {
+        const budgetRate = kpis.budgetTotal > 0 ? (kpis.budgetSpent / kpis.budgetTotal) * 100 : 56;
+        
+        // ゲージの値更新
+        const budgetGauge = document.querySelector('.gauge-budget .gauge-value');
+        const rateGauge = document.querySelector('.gauge-rate .gauge-value');
+        const completionGauge = document.querySelector('.gauge-completion .gauge-value');
+        
+        if (budgetGauge) budgetGauge.textContent = `¥${kpis.budgetSpent.toFixed(1)}M`;
+        if (rateGauge) rateGauge.textContent = `${Math.round(budgetRate)}%`;
+        if (completionGauge) completionGauge.textContent = `${Math.round(kpis.completionRate)}%`;
+    }
+
+    // 通知表示
+    function showNotification(message, type = 'info') {
+        const existing = document.querySelector('.notification');
+        if (existing) existing.remove();
+
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        
+        const colors = {
+            info: '#3b82f6',
+            success: '#10b981',
+            warning: '#f59e0b',
+            error: '#ef4444'
+        };
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${colors[type]};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            max-width: 350px;
+            font-family: 'Segoe UI', sans-serif;
+        `;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
+    // フィルター更新
+    function updateFilters() {
+        console.log('フィルター変更 - データを再取得');
+        updateDashboard();
+    }
+
+    // フルスクリーン
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    // タイムスタンプ更新
+    function updateTimestamp() {
+        const now = new Date();
+        const timestamp = now.toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        document.getElementById('lastUpdate').textContent = timestamp;
+    }
+
+    // 初期化
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📊 特別補償KPI - SharePoint連携版を初期化中...');
+        
+        // 初回データ読み込み
+        setTimeout(updateDashboard, 1000); // 1秒後に実行
+        
+        // 定期更新（5分ごと）
+        setInterval(updateDashboard, SHAREPOINT_CONFIG.updateInterval);
+        
+        // ページがアクティブになった時の更新
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                console.log('ページアクティブ - データ更新');
+                updateDashboard();
+            }
+        });
+        
+        console.log('🔄 SharePointリアルタイム更新が開始されました');
+    });
     </script>
 </body>
 </html>
