@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特別補償KPI Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f7f8fc;
+            color: #2d3748;
+            min-height: 100vh;
+            padding: 10px;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(31, 41, 55, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            color: white;
+            padding: 24px 32px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: clamp(22px, 4vw, 32px);
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .status-bar {
+            background: #fafbfc;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-info {
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 32px;
+            padding: 32px;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #fafbfc;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group {
+            margin-bottom: 24px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            min-height: 44px;
+            border: 1px solid transparent;
+        }
+
+        .filter-item:hover {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+        }
+
+        .filter-item input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.1);
+            cursor: pointer;
+            accent-color: #3b82f6;
+        }
+
+        .filter-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .kpi-section {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-color: #d1d5db;
+        }
+
+        .kpi-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .kpi-title {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-unit {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            min-height: 320px;
+            transition: all 0.2s ease;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+        }
+
+        .gauge::before {
+            content: '';
+            width: 140px;
+            height: 140px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .gauge-value {
+            position: relative;
+            z-index: 2;
+            font-size: clamp(22px, 4vw, 30px);
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+        }
+
+        .gauge-budget {
+            background: conic-gradient(from 0deg, #0ea5e9 0deg 122deg, #f1f5f9 122deg 360deg);
+        }
+
+        .gauge-rate {
+            background: conic-gradient(from 0deg, #10b981 0deg 202deg, #f1f5f9 202deg 360deg);
+        }
+
+        .gauge-completion {
+            background: conic-gradient(from 0deg, #10b981 0deg 360deg);
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 1199px) and (min-width: 769px) {
+            .dashboard-grid {
+                grid-template-columns: 250px 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            .header { padding: 12px 15px; }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 10px;
+            }
+            .sidebar { order: -1; padding: 15px; }
+            .kpi-section { grid-template-columns: 1fr; gap: 10px; }
+            .main-content { grid-template-columns: 1fr; gap: 15px; }
+        }
+
+        /* システム設定ダークモード対応 */
+        @media (prefers-color-scheme: dark) {
+            body { background: #111827; color: #f9fafb; }
+            .dashboard-container { background: #1f2937; border-color: #374151; }
+            .status-bar { background: #111827; border-color: #374151; }
+            .sidebar { background: #111827; border-color: #374151; }
+            .kpi-card, .chart-container { background: #1f2937; border-color: #374151; }
+            .kpi-value, .gauge-value { color: #f9fafb; }
+            .gauge::before { background: #1f2937; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>📊 特別補償KPI</h1>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-info">
+                📅 最終更新: <span id="lastUpdate">2025年6月28日 14:30</span>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="sidebar">
+                <h3>📊 Data Selection</h3>
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <input type="checkbox" id="fy2025" checked onchange="updateFilters()">
+                        <label for="fy2025">📅 2025年度</label>
+                    </div>
+                    <div class="filter-item">
+                        <input type="checkbox" id="rfa1" checked onchange="updateFilters()">
+                        <label for="rfa1">📋 RFA2566111_40M</label>
+                    </div>
+                    <div class="filter-item">
+                        <input type="checkbox" id="rfa2" onchange="updateFilters()">
+                        <label for="rfa2">📋 RFA2574190_20M</label>
+                    </div>
+                </div>
+                
+                <h3>🎯 カテゴリ除外</h3>
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <input type="checkbox" id="exclude1" checked onchange="updateFilters()">
+                        <label for="exclude1">🚫 出荷停止を除外</label>
+                    </div>
+                    <div class="filter-item">
+                        <input type="checkbox" id="exclude2" checked onchange="updateFilters()">
+                        <label for="exclude2">🚫 BOを除外</label>
+                    </div>
+                    <div class="filter-item">
+                        <input type="checkbox" id="exclude3" onchange="updateFilters()">
+                        <label for="exclude3">🚫 レンタカーを除外</label>
+                    </div>
+                </div>
+                
+                <h3>📱 表示設定</h3>
+                <div class="filter-group">
+                    <div class="filter-item" onclick="toggleFullscreen()">
+                        <span>🖥️ フルスクリーン</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="kpi-section">
+                    <div class="kpi-card">
+                        <div class="kpi-title">Initial Response Time</div>
+                        <div class="kpi-value" id="responseTime">5.0</div>
+                        <div class="kpi-unit">days</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-title">Resolution Time</div>
+                        <div class="kpi-value" id="resolutionTime">6.0</div>
+                        <div class="kpi-unit">days</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-title">Budget Spent</div>
+                        <div class="kpi-value" id="budgetSpent">¥34M</div>
+                        <div class="kpi-unit">of ¥60M</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-title">Completion Rate</div>
+                        <div class="kpi-value" id="completionRate">100%</div>
+                        <div class="kpi-unit">within 12 days</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; text-align: center;">💰 Budget Spent Amount</div>
+                    <div class="gauge-container">
+                        <div class="gauge gauge-budget">
+                            <div class="gauge-value">¥34M</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; text-align: center;">📊 Budget Spent Rate</div>
+                    <div class="gauge-container">
+                        <div class="gauge gauge-rate">
+                            <div class="gauge-value">56%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; text-align: center;">✅ Completion Rate</div>
+                    <div class="gauge-container">
+                        <div class="gauge gauge-completion">
+                            <div class="gauge-value">100%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateFilters() {
+            console.log('フィルターが更新されました');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const timestamp = now.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('lastUpdate').textContent = timestamp;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTimestamp();
+            console.log('📊 特別補償KPI ダッシュボード初期化完了');
+        });
+
+        // 自動更新（5分ごと）
+        setInterval(updateTimestamp, 300000);
+    </script>
+</body>
+</html>
